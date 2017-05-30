@@ -12,6 +12,7 @@
 #include <random>
 #include <sstream>
 #include <cassert>
+#include <unordered_map>
 
 
 static bool has_unique_characters(const std::string& str) {
@@ -210,9 +211,30 @@ void problem1_4() {
   assert(!isPalindromePermutation("tact coaa"));
 }
 
+using StringDataType = std::unordered_map<std::tuple<int,int>, int>;
+auto getStringData(const std::string& str1, StringDataType& res)
+  -> std::unordered_map<std::tuple<int,std::string::value_type>, int>
+{
+  for (auto c : str1) {
+
+  }
+}
+
+int getNumberOfEdits(const std::string& str1, const std::string& str2) {
+
+
+
+  return 0;
+}
+
+void problem1_5() {
+
+}
+
 void chapter_01::run() {
   //problem1_1();
   //problem1_2();
   //problem1_3();
-  problem1_4();
+  //problem1_4();
+  problem1_5();
 }
