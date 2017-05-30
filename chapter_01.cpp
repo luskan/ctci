@@ -9,6 +9,9 @@
 #include <unordered_set>
 #include <algorithm>
 #include <bitset>
+#include <random>
+#include <sstream>
+#include <cassert>
 
 
 static bool has_unique_characters(const std::string& str) {
@@ -97,14 +100,119 @@ void problem1_2() {
 
 }
 
+void urlify(std::string& s) {
+  size_t real_length = s.size();
+  for ( int n = 0; n < real_length; ) {
+    if (s[n] == ' ') {
+      if (s.size() < real_length + 2)
+        s.resize(real_length + 2);
+      memmove(&s[n + 3], &s[n + 1], real_length - n);
+      s[n] = '%';
+      s[n+1] = '2';
+      s[n+2] = '0';
+      n += 3;
+      real_length += 2;
+    }
+    else {
+      n++;
+    }
+  }
+}
+
+// As in book - should be better than above urlify - as it moves less characters.
+void urlify2(std::string& s) {
+  size_t real_length = s.size();
+  if (real_length == 0)
+    return;
+  size_t spaces_count = std::count_if(s.cbegin(), s.cend(), isspace);
+  int index = real_length + spaces_count * 2;
+
+  int required_len = real_length + spaces_count*2;
+  if (s.size() < required_len)
+    s.resize(required_len);
+
+  for (int i = real_length - 1; i >= 0; i--) {
+    if (s[i] == ' ') {
+      s[index - 1] = '0';
+      s[index - 2] = '2';
+      s[index - 3] = '%';
+      index -= 3;
+    }
+    else {
+      s[index - 1] = s[i];
+      index--;
+    }
+  }
+}
+
 void problem1_3() {
   // URLify: Replace all spaces with %20
 
   std::cout << "\nProblem 1.3\n";
 
+  std::default_random_engine rd(10001);
+  std::uniform_int_distribution<> ud(0, 'z'-'a');
+
+  int half_ud_range = (ud.max()-ud.min())/2;
+  for (int n = 0; n < 1000; ++n) {
+
+    std::stringstream ss;
+
+    for (int c = 0; c < n; ++c) {
+      ss << static_cast<char>(('a' + ud(rd)));
+      if (ud(rd) < half_ud_range)
+        ss << ' ';
+    }
+
+    std::string test_org = ss.str();
+
+    //std::cout << n << " >" << test1 << "<\n";
+
+    std::string test_a = ss.str();
+    std::string test_b = ss.str();
+    urlify(test_a);
+    urlify2(test_b);
+
+    assert(test_a == test_b);
+
+    //std::cout << n << " >" << test2 << "<\n";
+
+    test_org.erase(std::remove_if(test_org.begin(), test_org.end(), isspace), test_org.end());
+    test_b.erase(std::remove_if(test_b.begin(), test_b.end(), [](char c){ return c=='%' || c == '2' || c == '0'; }), test_b.end());
+    assert(test_org == test_b);
+  }
+
+}
+
+bool isPalindromePermutation(const std::string& str) {
+  std::vector<int> v;
+  v.resize('z' - 'a');
+  int oddCount = 0;
+  for (char c : str) {
+    if (c < 'a' || c > 'z')
+      continue;
+    int w = c - 'a';
+    v[w]++;
+    if ((v[w] % 2) == 1) {
+      oddCount++;
+    }
+    else {
+      oddCount--;
+    }
+  }
+  if (oddCount > 1)
+    return false;
+  return true;
+}
+
+void problem1_4() {
+  assert(isPalindromePermutation("tact coa"));
+  assert(!isPalindromePermutation("tact coaa"));
 }
 
 void chapter_01::run() {
-  problem1_1();
-  problem1_2();
+  //problem1_1();
+  //problem1_2();
+  //problem1_3();
+  problem1_4();
 }
