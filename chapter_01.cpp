@@ -15,6 +15,7 @@
 #include <unordered_map>
 
 
+bool check_insertion_edit(const std::string &basic_string, const std::string &basicString);
 static bool has_unique_characters(const std::string& str) {
   std::bitset<'z'-'a'> bs;
   for(auto c : str)
@@ -211,24 +212,79 @@ void problem1_4() {
   assert(!isPalindromePermutation("tact coaa"));
 }
 
-using StringDataType = std::unordered_map<std::tuple<int,int>, int>;
-auto getStringData(const std::string& str1, StringDataType& res)
-  -> std::unordered_map<std::tuple<int,std::string::value_type>, int>
-{
-  for (auto c : str1) {
-
-  }
+bool compareWithWildcard(const std::string& str1, const std::string& str2) {
+  return str1.size() == str2.size()
+    && std::equal(str1.begin(), str1.end(), str2.begin(), [](char ch1, char ch2){ return (ch1 == ch2 || ch1 == '*' || ch2 == '*'); });
 }
 
-int getNumberOfEdits(const std::string& str1, const std::string& str2) {
+int getNumberOfEdits_brute_force(const std::string &str1, const std::string &str2) {
 
+  // Check insertions
+  std::string stmp;
+  int modifications = 0;
+  for (size_t i = 0; i < str1.size(); i++) {
+    stmp = str1;
+    stmp.insert(stmp.begin() + i, '*');
+    if (compareWithWildcard(stmp, str2)) {
+      modifications++;
+    }
+  }
 
+  // Check removal
+  for (size_t i = 0; i < str1.size(); i++) {
+    stmp = str2;
+    stmp.insert(stmp.begin() + i, '*');
+    if (compareWithWildcard(stmp, str1)) {
+      modifications++;
+    }
+  }
 
-  return 0;
+  // Check replace
+  for (size_t i = 0; i < str1.size(); i++) {
+    stmp = str1;
+    stmp[i] = '*';
+    if (compareWithWildcard(stmp, str2)) {
+      modifications++;
+    }
+  }
+
+  if (modifications == 0 && str1 != str2) {
+    modifications = 999;
+  }
+
+  return modifications;
+}
+
+int getNumberOfEdits_v1(const std::string &str1, const std::string &str2) {
+  bool wasModified = true;
+
+  if (str1.size() + 1 == str2.size()) {
+    wasModified = check_insertion_edit(str1, str2);
+  }
+}
+bool check_insertion_edit(const std::string &basic_string, const std::string &basicString) {
+  return false;
 }
 
 void problem1_5() {
+  std::cout << "\nProblem 1.5\n";
 
+  std::vector<std::tuple<std::string, std::string, bool>> test = {
+    {"pale", "ple", true},
+    {"pales", "pale", true},
+    {"pale", "bale", true},
+    {"pale", "bake", false},
+  };
+
+  for (auto it : test) {
+    int modif;
+
+    //modif = getNumberOfEdits_brute_force(std::get<0>(it), std::get<1>(it));
+    modif = getNumberOfEdits_v1(std::get<0>(it), std::get<1>(it));
+
+    std::cout << " > " << std::get<0>(it) << ", " << std::get<1>(it) << ", " << std::get<2>(it) << ", found=" << modif << "\n";
+    assert(modif == 1 && std::get<2>(it) || !std::get<2>(it));
+  }
 }
 
 void chapter_01::run() {
