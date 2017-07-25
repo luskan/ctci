@@ -14,8 +14,6 @@
 #include <cassert>
 #include <unordered_map>
 
-
-bool check_insertion_edit(const std::string &basic_string, const std::string &basicString);
 static bool has_unique_characters(const std::string& str) {
   std::bitset<'z'-'a'> bs;
   for(auto c : str)
@@ -212,79 +210,234 @@ void problem1_4() {
   assert(!isPalindromePermutation("tact coaa"));
 }
 
-bool compareWithWildcard(const std::string& str1, const std::string& str2) {
-  return str1.size() == str2.size()
-    && std::equal(str1.begin(), str1.end(), str2.begin(), [](char ch1, char ch2){ return (ch1 == ch2 || ch1 == '*' || ch2 == '*'); });
-}
+namespace pr_1_5 {
 
-int getNumberOfEdits_brute_force(const std::string &str1, const std::string &str2) {
+    bool check_insertion_edit(const std::string &basic_string, const std::string &basicString);
 
-  // Check insertions
-  std::string stmp;
-  int modifications = 0;
-  for (size_t i = 0; i < str1.size(); i++) {
-    stmp = str1;
-    stmp.insert(stmp.begin() + i, '*');
-    if (compareWithWildcard(stmp, str2)) {
-      modifications++;
+    bool check_insertion(const std::string &basic_string, const std::string &basicString);
+
+    bool check_replace(const std::string &basic_string, const std::string &basicString);
+
+    bool compareWithWildcard(const std::string &str1, const std::string &str2) {
+      return str1.size() == str2.size()
+             && std::equal(str1.begin(), str1.end(), str2.begin(),
+                           [](char ch1, char ch2) { return (ch1 == ch2 || ch1 == '*' || ch2 == '*'); });
     }
-  }
 
-  // Check removal
-  for (size_t i = 0; i < str1.size(); i++) {
-    stmp = str2;
-    stmp.insert(stmp.begin() + i, '*');
-    if (compareWithWildcard(stmp, str1)) {
-      modifications++;
+    int getNumberOfEdits_Ver1(const std::string &str1, const std::string &str2) {
+
+      // Check insertions
+      std::string stmp;
+      int modifications = 0;
+      for (size_t i = 0; i < str1.size(); i++) {
+        stmp = str1;
+        stmp.insert(stmp.begin() + i, '*');
+        if (compareWithWildcard(stmp, str2)) {
+          modifications++;
+        }
+      }
+
+      // Check removal
+      for (size_t i = 0; i < str1.size(); i++) {
+        stmp = str2;
+        stmp.insert(stmp.begin() + i, '*');
+        if (compareWithWildcard(stmp, str1)) {
+          modifications++;
+        }
+      }
+
+      // Check replace
+      for (size_t i = 0; i < str1.size(); i++) {
+        stmp = str1;
+        stmp[i] = '*';
+        if (compareWithWildcard(stmp, str2)) {
+          modifications++;
+        }
+      }
+
+      if (modifications == 0 && str1 != str2) {
+        modifications = 999;
+      }
+
+      return modifications;
     }
-  }
 
-  // Check replace
-  for (size_t i = 0; i < str1.size(); i++) {
-    stmp = str1;
-    stmp[i] = '*';
-    if (compareWithWildcard(stmp, str2)) {
-      modifications++;
+    bool getNumberOfEdits_Ver2(const std::string &str1, const std::string &str2) {
+      if (str1.size() == str2.size() + 1) {
+        // deletion
+        return check_insertion(str1, str2);
+      } else if (str1.size() + 1 == str2.size()) {
+        // insertion
+        return check_insertion(str2, str1);
+      } else if (str1.size() == str2.size()) {
+        // replace
+        return check_replace(str1, str2);
+      }
+      return false;
     }
-  }
 
-  if (modifications == 0 && str1 != str2) {
-    modifications = 999;
-  }
+    bool check_replace(const std::string &s1, const std::string &s2) {
+      bool diffWasFound = false;
+      for (int index1 = 0; index1 < s1.size(); ++index1) {
+        if (s1[index1] != s2[index1]) {
+          if (diffWasFound)
+            return false;
+          diffWasFound = true;
+        }
+      }
+      return true;
+    }
 
-  return modifications;
+    bool check_insertion(const std::string &s1, const std::string &s2) {
+      int index1 = 0;
+      int index2 = 0;
+      assert(s1.size() == s2.size() + 1);
+      bool diffFound = false;
+      for (; index1 < s1.size(); ) {
+        if (s1[index1] != s2[index2]) {
+          if (diffFound)
+            return false;
+          diffFound = true;
+          ++index1;
+        } else {
+          ++index1;
+          ++index2;
+        }
+      }
+      return true;
+    }
+
+    void problem1_5() {
+      std::cout << "\nProblem 1.5\n";
+
+      std::vector<std::tuple<std::string, std::string, bool>> test = {
+          {"pale",  "ple",  true},
+          {"pales", "pale", true},
+          {"pale",  "bale", true},
+          {"pale",  "bake", false},
+      };
+
+      for (auto it : test) {
+        int modif;
+
+        //modif = getNumberOfEdits_Ver1(std::get<0>(it), std::get<1>(it));
+        modif = getNumberOfEdits_Ver2(std::get<0>(it), std::get<1>(it)) ? 1 : 0;
+
+        std::cout << " > " << std::get<0>(it) << ", " << std::get<1>(it) << ", " << std::get<2>(it) << ", found="
+                  << modif << "\n";
+        assert(modif == 1 && std::get<2>(it) || !std::get<2>(it));
+      }
+    }
 }
 
-int getNumberOfEdits_v1(const std::string &str1, const std::string &str2) {
-  bool wasModified = true;
+namespace pr_1_6 {
 
-  if (str1.size() + 1 == str2.size()) {
-    wasModified = check_insertion_edit(str1, str2);
-  }
+    std::string compress(const std::string& s) {
+      std::string res;
+      if (s.empty())
+        return res;
+
+      char last_c = 0;
+      int count = 0;
+      for (int i = 0; i < s.size(); ++i) {
+        char c = s[i];
+        if (i + 1 == s.size() && c == last_c) {
+          count++;
+          res += std::to_string(count);
+        }
+        else if (c != last_c) {
+          if (count)
+            res += std::to_string(count);
+          res += c;
+          last_c = c;
+          count = 1;
+        }
+        else {
+          count++;
+        }
+      }
+      return res.size() > s.size() ? s : res;
+    }
+
+    void problem1_6() {
+      std::vector<std::tuple<std::string, std::string>> test {
+          {"aaaacccfeeewwwdd", "a4c3f1e3w3d2"},
+          {"ab", "ab"}
+      };
+
+      for (auto it : test) {
+        auto sc = compress(std::get<0>(it));
+
+        std::cout << " > " << std::get<0>(it) << ", expected: " << std::get<1>(it) << ", " << ", sc="
+                  << sc << "\n";
+        assert(std::get<1>(it) == sc);
+      }
+    }
 }
-bool check_insertion_edit(const std::string &basic_string, const std::string &basicString) {
-  return false;
-}
 
-void problem1_5() {
-  std::cout << "\nProblem 1.5\n";
+namespace pr_1_7 {
 
-  std::vector<std::tuple<std::string, std::string, bool>> test = {
-    {"pale", "ple", true},
-    {"pales", "pale", true},
-    {"pale", "bale", true},
-    {"pale", "bake", false},
-  };
+    using color_t = std::tuple<uint8_t,uint8_t,uint8_t,uint8_t>;
+    using matrix_t = std::vector<std::vector<color_t>>;
 
-  for (auto it : test) {
-    int modif;
+    void rot_mat_90(matrix_t& mat, matrix_t& res) {
 
-    //modif = getNumberOfEdits_brute_force(std::get<0>(it), std::get<1>(it));
-    modif = getNumberOfEdits_v1(std::get<0>(it), std::get<1>(it));
+      for (int y = 0; y < mat.size(); ++y) {
+        for (int x = 0; x < mat[y].size(); ++x) {
 
-    std::cout << " > " << std::get<0>(it) << ", " << std::get<1>(it) << ", " << std::get<2>(it) << ", found=" << modif << "\n";
-    assert(modif == 1 && std::get<2>(it) || !std::get<2>(it));
-  }
+          int off_x = x - mat.size()/2;
+          int off_y = y - mat.size()/2;
+
+          // xo
+          // oo
+          if ( off_x <= 0 && off_y >= 0) {
+            off_x = std::abs(off_x);
+          }
+
+          // ox
+          // oo
+          else if ( off_x >= 0 && off_y >= 0) {
+            off_y = -off_y;
+          }
+
+          // oo
+          // ox
+          else if (off_x >= 0 && off_y <= 0) {
+            off_x = -off_x;
+          }
+
+          // oo
+          // xo
+          else if (off_x <= 0 && off_y <= 0) {
+            off_y = std::abs(off_y);
+          }
+
+          off_x += mat.size()/2;
+          off_y += mat.size()/2;
+
+          res[off_y][off_x] = mat[y][x];
+        }
+      }
+    }
+
+    void problem1_7() {
+
+      matrix_t t1 = {{1, 2, 3},
+                     {4, 5, 6},
+                     {7, 8, 9}};
+      matrix_t t2 = {{7, 4, 1},
+                     {8, 5, 2},
+                     {9, 6, 3}};
+      std::vector<std::tuple<matrix_t, matrix_t>> test = {
+        {t1, t2}
+      };
+
+      for (auto t : test) {
+        matrix_t res;
+        rot_mat_90(std::get<0>(t), res);
+        assert(std::get<1>(t) == res);
+      }
+    }
 }
 
 void chapter_01::run() {
@@ -292,5 +445,7 @@ void chapter_01::run() {
   //problem1_2();
   //problem1_3();
   //problem1_4();
-  problem1_5();
+  //pr_1_5::problem1_5();
+  //pr_1_6::problem1_6();
+  pr_1_7::problem1_7();
 }
