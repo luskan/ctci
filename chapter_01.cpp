@@ -375,48 +375,70 @@ namespace pr_1_6 {
     }
 }
 
+using color_t = int;//std::tuple<uint8_t,uint8_t,uint8_t,uint8_t>;
+using matrix_t = std::vector<std::vector<color_t>>;
+
 namespace pr_1_7 {
 
-    using color_t = std::tuple<uint8_t,uint8_t,uint8_t,uint8_t>;
-    using matrix_t = std::vector<std::vector<color_t>>;
+    void rot_mat_90(matrix_t& mat) {
 
-    void rot_mat_90(matrix_t& mat, matrix_t& res) {
+      int n = mat.size() / 2;
+      for (int lay = 0; lay < n; ++lay) {
 
-      for (int y = 0; y < mat.size(); ++y) {
-        for (int x = 0; x < mat[y].size(); ++x) {
+        for (int i = 0; i < mat.size() - 2*lay - 1; ++i) {
 
-          int off_x = x - mat.size()/2;
-          int off_y = y - mat.size()/2;
-
-          // xo
-          // oo
-          if ( off_x <= 0 && off_y >= 0) {
-            off_x = std::abs(off_x);
+          /*
+          std::cout << "lay: " << lay << ", i:" << i << "\n";
+          for (auto& row : mat ) {
+            for (auto& el : row) {
+              std::cout <<  el << " ";
+            }
+            std::cout << "\n";
           }
+          std::cout << "\n";
+          */
 
-          // ox
-          // oo
-          else if ( off_x >= 0 && off_y >= 0) {
-            off_y = -off_y;
+          //
+          //          ooo
+          // temp <-- xoo
+          //          xoo
+          color_t temp = mat[mat.size() - lay - 1 - i][lay];
+
+          //
+          // ooo     ooo
+          // xoo <-- ooo
+          // xoo     oxx
+          mat[mat.size() - lay - 1 - i][lay] = mat[mat.size() - lay - 1][mat.size() - 1 - i - lay];
+
+          //
+          // ooo     oox
+          // ooo <-- oox
+          // oxx     ooo
+          mat[mat.size() - lay - 1][mat.size() - 1 - i - lay] = mat[i + lay][mat.size() - 1 - lay];
+
+          //
+          // oox     xxo
+          // oox <-- ooo
+          // ooo     ooo
+          mat[i + lay][mat.size() - 1 - lay] = mat[lay][i + lay];
+
+          //
+          // xxo
+          // ooo <-- temp
+          // ooo
+          mat[lay][i + lay] = temp;
+
+          /*
+          for (auto& row : mat ) {
+            for (auto& el : row) {
+              std::cout <<  el << " ";
+            }
+            std::cout << "\n";
           }
-
-          // oo
-          // ox
-          else if (off_x >= 0 && off_y <= 0) {
-            off_x = -off_x;
-          }
-
-          // oo
-          // xo
-          else if (off_x <= 0 && off_y <= 0) {
-            off_y = std::abs(off_y);
-          }
-
-          off_x += mat.size()/2;
-          off_y += mat.size()/2;
-
-          res[off_y][off_x] = mat[y][x];
+          std::cout << "\n";
+           */
         }
+
       }
     }
 
@@ -428,16 +450,124 @@ namespace pr_1_7 {
       matrix_t t2 = {{7, 4, 1},
                      {8, 5, 2},
                      {9, 6, 3}};
+
+      matrix_t t3 = {{1, 2, 3, 4, 5},
+                     {1, 2, 3, 4, 5},
+                     {1, 2, 3, 4, 5},
+                     {1, 2, 3, 4, 5},
+                     {1, 2, 3, 4, 5}};
+
+      matrix_t t4 = {{1, 1, 1, 1, 1},
+                     {2, 2, 2, 2, 2},
+                     {3, 3, 3, 3, 3},
+                     {4, 4, 4, 4, 4},
+                     {5, 5, 5, 5, 5}};
+
+      matrix_t t5 = {
+                      {1, 8, 2, 2, 7, 7, 5, 2},
+                      {7, 5, 6, 6, 4, 6, 5, 2},
+                      {4, 1, 6, 2, 4, 4, 5, 2},
+                      {2, 2, 6, 3, 4, 7, 2, 2},
+                      {4, 3, 4, 6, 3, 5, 3, 4},
+                      {1, 7, 5, 7, 5, 3, 4, 3},
+                      {2, 1, 3, 1, 5, 8, 2, 8},
+                      {8, 1, 6, 8, 7, 8, 7, 4}};
+      
+      matrix_t t6 = { {8, 2, 1, 4, 2, 4, 7, 1},
+                      {1, 1, 7, 3, 2, 1, 5, 8},
+                      {6, 3, 5, 4, 6, 6, 6, 2},
+                      {8, 1, 7, 6, 3, 2, 6, 2},
+                      {7, 5, 5, 3, 4, 4, 4, 7},
+                      {8, 8, 3, 5, 7, 4, 6, 7},
+                      {7, 2, 4, 3, 2, 5, 5, 5},
+                      {4, 8, 3, 4, 2, 2, 2, 2}};
+
       std::vector<std::tuple<matrix_t, matrix_t>> test = {
-        {t1, t2}
+        {t1, t2},
+        {t3, t4},
+        {t5, t6}
       };
 
-      for (auto t : test) {
-        matrix_t res;
-        rot_mat_90(std::get<0>(t), res);
+      for (auto& t : test) {
+        matrix_t res = std::get<0>(t);
+        rot_mat_90(res);
+        for (auto& row : res) {
+          for (auto& el : row) {
+            std::cout <<  el << " ";
+          }
+          std::cout << "\n";
+        }
+        std::cout << "\n";
         assert(std::get<1>(t) == res);
       }
     }
+}
+
+namespace pr_1_8 {
+
+  void fill_rc_zeros(matrix_t& mat) {
+
+  }
+
+  void problem1_8() {
+    matrix_t t1 = {{1, 2, 3},
+                   {4, 0, 6},
+                   {7, 8, 9}};
+    matrix_t t2 = {{1, 0, 3},
+                   {0, 0, 0},
+                   {7, 0, 9}};
+
+    matrix_t t3 = {{1, 2, 3, 4, 5},
+                   {1, 2, 3, 4, 5},
+                   {1, 0, 3, 4, 5},
+                   {1, 2, 3, 0, 5},
+                   {1, 2, 3, 4, 5}};
+
+    matrix_t t4 = {{1, 0, 3, 0, 5},
+                   {1, 0, 3, 0, 5},
+                   {0, 0, 0, 0, 0},
+                   {0, 0, 0, 0, 0},
+                   {1, 0, 3, 0, 5}};
+
+    matrix_t t5 = {
+      {1, 8, 2, 2, 7, 7, 5, 2},
+      {7, 5, 6, 6, 4, 6, 0, 2},
+      {4, 1, 6, 2, 4, 4, 5, 2},
+      {2, 2, 6, 3, 4, 7, 2, 2},
+      {4, 3, 4, 6, 3, 5, 3, 4},
+      {1, 7, 5, 7, 5, 3, 4, 3},
+      {2, 0, 3, 1, 5, 8, 2, 8},
+      {8, 1, 6, 8, 7, 8, 7, 4}};
+
+    matrix_t t6 = {
+      {1, 0, 2, 2, 7, 7, 0, 2},
+      {0, 0, 0, 0, 0, 0, 0, 0},
+      {4, 0, 6, 2, 4, 4, 0, 2},
+      {2, 0, 6, 3, 4, 7, 0, 2},
+      {4, 0, 4, 6, 3, 5, 0, 4},
+      {1, 0, 5, 7, 5, 3, 0, 3},
+      {0, 0, 0, 0, 0, 0, 0, 0},
+      {8, 0, 6, 8, 7, 8, 0, 4}};
+
+    std::vector<std::tuple<matrix_t, matrix_t>> test = {
+      {t1, t2},
+      {t3, t4},
+      {t5, t6}
+    };
+
+    for (auto& t : test) {
+      matrix_t res = std::get<0>(t);
+      fill_rc_zeros(res);
+      for (auto& row : res) {
+        for (auto& el : row) {
+          std::cout <<  el << " ";
+        }
+        std::cout << "\n";
+      }
+      std::cout << "\n";
+      assert(std::get<1>(t) == res);
+    }
+  }
 }
 
 void chapter_01::run() {
@@ -447,5 +577,6 @@ void chapter_01::run() {
   //problem1_4();
   //pr_1_5::problem1_5();
   //pr_1_6::problem1_6();
-  pr_1_7::problem1_7();
+  //pr_1_7::problem1_7();
+  pr_1_8::problem1_8();
 }
