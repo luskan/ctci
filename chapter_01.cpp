@@ -38,9 +38,10 @@ static bool has_unique_characters_2(const std::string& str) {
   return true;
 }
 
+/**
+ * Determine if a string has all unique characters.
+ */
 void problem1_1() {
-
-  // Determine if a string has all unique characters.
 
   std::cout << "\nProblem 1.1\n";
 
@@ -56,9 +57,10 @@ void problem1_1() {
   std::cout << "has_unique_characters_2: " << has_unique_characters_2(str2) << "\n";
 }
 
+/*
+ * Check permutation: given two strings check if they are permutations of each other
+ */
 void problem1_2() {
-
-  // Check permutation: given two strings check if they are permutations of each other
 
   std::cout << "\nProblem 1.2\n";
 
@@ -100,6 +102,7 @@ void problem1_2() {
 
 }
 
+// Replaces in string all spaces with %20
 void urlify(std::string& s) {
   size_t real_length = s.size();
   for ( int n = 0; n < real_length; ) {
@@ -119,7 +122,8 @@ void urlify(std::string& s) {
   }
 }
 
-// As in book - should be better than above urlify - as it moves less characters.
+// Replaces in string all spaces with %20
+// INFO: As in book - should be better than above urlify - as it moves less characters.
 void urlify2(std::string& s) {
   size_t real_length = s.size();
   if (real_length == 0)
@@ -184,6 +188,9 @@ void problem1_3() {
 
 }
 
+/**
+ * Checks if given string can be permutated into a palindrome
+ */
 bool isPalindromePermutation(const std::string& str) {
   std::vector<int> v;
   v.resize('z' - 'a');
@@ -262,6 +269,9 @@ namespace pr_1_5 {
       return modifications;
     }
 
+    /**
+     * Checks whether @param str1 is one edit away from @param str2
+     */
     bool getNumberOfEdits_Ver2(const std::string &str1, const std::string &str2) {
       if (str1.size() == str2.size() + 1) {
         // deletion
@@ -332,6 +342,11 @@ namespace pr_1_5 {
 
 namespace pr_1_6 {
 
+    /**
+     * Basic string compression: aabccccddd -> 2ab4c3d
+     * @param s
+     * @return
+     */
     std::string compress(const std::string& s) {
       std::string res;
       if (s.empty())
@@ -380,6 +395,9 @@ using matrix_t = std::vector<std::vector<color_t>>;
 
 namespace pr_1_7 {
 
+    /*
+     * Rotate matrix 90 degrees right
+     */
     void rot_mat_90(matrix_t& mat) {
 
       int n = mat.size() / 2;
@@ -505,8 +523,36 @@ namespace pr_1_7 {
 
 namespace pr_1_8 {
 
+  /**
+   * Fills entire r column and entire c column for each r;c equal to 0
+   */
   void fill_rc_zeros(matrix_t& mat) {
 
+    std::vector<bool> rows, cols;
+    rows.resize(mat.size());
+    cols.resize(mat[0].size());
+    for (size_t row = 0; row < mat.size(); ++row) {
+      for (size_t col = 0; col < mat[row].size(); ++col) {
+        if (mat[row][col] == 0) {
+          rows[row] = true;
+          cols[col] = true;
+        }
+      }
+    }
+
+    for (size_t i = 0; i < rows.size(); ++i) {
+      if (rows[i]) {
+        for (size_t k = 0; k < cols.size(); ++k)
+          mat[i][k] = 0;
+      }
+    }
+
+    for (size_t i = 0; i < cols.size(); ++i) {
+      if (cols[i]) {
+        for (size_t k = 0; k < rows.size(); ++k)
+          mat[k][i] = 0;
+      }
+    }
   }
 
   void problem1_8() {
@@ -570,6 +616,43 @@ namespace pr_1_8 {
   }
 }
 
+namespace pr_1_9 {
+
+  bool isSubstring(const std::string& str, const std::string& word) {
+    return str.find(word) != std::string::npos;
+  }
+
+  /***
+   * Checks if s1 is a rotation of s2
+   * @param s1 string after rotation
+   * @param s2 string before rotation
+   * @return true if s1 is a rotation of s2
+   */
+  bool isRotatedString(const std::string& s1, const std::string& s2) {
+    if (s1.size() != s2.size() || s1.size() == 0)
+      return false;
+    std::string s1s1 = s1 + s1;
+    if (isSubstring(s1s1, s2))
+      return true;
+    return false;
+  }
+
+  void problem1_9() {
+    std::vector<std::tuple<std::string, std::string, bool>> tests = {
+      { "mammamia", "mamiamam", true },
+      { "mammamia", "mamiamaz", false }
+    };
+
+    for (auto el : tests) {
+      std::string s1,s2;
+      bool exp;
+      std::tie(s1, s2, exp) = el;
+      bool res = isRotatedString(s1, s2);
+      assert(res == exp);
+    }
+  }
+}
+
 void chapter_01::run() {
   //problem1_1();
   //problem1_2();
@@ -578,5 +661,6 @@ void chapter_01::run() {
   //pr_1_5::problem1_5();
   //pr_1_6::problem1_6();
   //pr_1_7::problem1_7();
-  pr_1_8::problem1_8();
+  //pr_1_8::problem1_8();
+  pr_1_9::problem1_9();
 }
